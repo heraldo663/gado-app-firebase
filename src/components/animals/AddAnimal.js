@@ -1,41 +1,41 @@
-import React, { Component } from 'react'
+import React, { Component } from "react";
 import { firestoreConnect } from "react-redux-firebase";
-import BackToDashbaord from '../layout/BackToDashboard';
+import BackToDashbaord from "../layout/BackToDashboard";
 import PropTypes from "prop-types";
-import { connect } from 'react-redux';
+import { connect } from "react-redux";
 import { compose } from "redux";
 
-const filesPath = 'cows'
+const filesPath = "cows";
 
 class AddAnimal extends Component {
   static propTypes = {
     firebase: PropTypes.object.isRequired,
     firestore: PropTypes.object.isRequired,
     uploadedFiles: PropTypes.object
-  }
+  };
 
   state = {
-    name: '',
-    race: '',
+    name: "",
+    race: "",
     sex: true,
-    semen: '',
-    imgUrl: '',
-    files: '',
+    semen: "",
+    imgUrl: "",
+    files: "",
+    imgRef: "",
     age: new Date().now,
-    imgPreview: ''
-  }
+    imgPreview: ""
+  };
 
   onChange = e => {
     this.setState({ [e.target.name]: e.target.value });
-  }
+  };
 
   onFilesPreview = e => {
     this.setState({
       imgPreview: URL.createObjectURL(e.target.files[0]),
       files: e.target.files
-    })
-
-  }
+    });
+  };
 
   onSubmit = e => {
     e.preventDefault();
@@ -43,26 +43,36 @@ class AddAnimal extends Component {
     const newAnimal = this.state;
     delete newAnimal.imgPreview;
     const { files } = this.state;
-    delete newAnimal.files
-    const cowsRef = this.props.firebase.storage().ref()
-    cowsRef.child(`${filesPath}/${files[0].name}add`).put(files[0]).then(snapshot => {
-      console.log('uploaded');
-      cowsRef.child(`${filesPath}/${files[0].name}add`).getDownloadURL().then(url => {
-        newAnimal.imgUrl = url
-        this.props.firestore.uodate({ collection: 'cows' }, newAnimal).then(() => {
-          this.props.history.push("/")
-          window.location.reload() //@TODO: melhorara a gambiarra
-        })
-      })
-    })
-
-  }
+    const uploadUrl = `${filesPath}/${files[0].name}`;
+    delete newAnimal.files;
+    const cowsRef = this.props.firebase.storage().ref();
+    cowsRef
+      .child(uploadUrl)
+      .put(files[0])
+      .then(snapshot => {
+        console.log("uploaded");
+        cowsRef
+          .child(uploadUrl)
+          .getDownloadURL()
+          .then(url => {
+            newAnimal.imgUrl = url;
+            const ref = cowsRef.child(uploadUrl);
+            newAnimal.imgRef = ref.fullPath;
+            this.props.firestore
+              .add({ collection: "cows" }, newAnimal)
+              .then(() => {
+                this.props.history.push("/");
+                window.location.reload(); //@TODO: melhorara a gambiarra
+              });
+          });
+      });
+  };
 
   render() {
     const { sex } = this.state;
     return (
       <div>
-        <BackToDashbaord></BackToDashbaord>
+        <BackToDashbaord />
         <div className="row">
           <div className="col">
             <div className="card">
@@ -115,31 +125,59 @@ class AddAnimal extends Component {
                   </div>
                   <div className="form-group">
                     <div className="form-check form-check-inline">
-                      <input className="form-check-input" type="radio" name="sex" onChange={this.onChange} value={sex ? "femea" : null} checked />
+                      <input
+                        className="form-check-input"
+                        type="radio"
+                        name="sex"
+                        onChange={this.onChange}
+                        value={sex ? "femea" : null}
+                        checked
+                      />
                       <label className="form-check-label" htmlFor="femea">
                         Femea
                       </label>
                     </div>
                     <div className="form-check form-check-inline">
-                      <input className="form-check-input" type="radio" name="sex" onChange={this.onChange} value={sex ? "macho" : null} />
+                      <input
+                        className="form-check-input"
+                        type="radio"
+                        name="sex"
+                        onChange={this.onChange}
+                        value={sex ? "macho" : null}
+                      />
                       <label className="form-check-label" htmlFor="macho">
                         Macho
-                        </label>
+                      </label>
                     </div>
                     <div className="form-group">
                       <label htmlFor="imgPreview">Enviar foto</label>
-                      <input type="file" name="ImgPreview" onChange={this.onFilesPreview} className="form-control-file" />
-                      {this.state.imgPreview ? (<img src={this.state.imgPreview} alt="test" height="150" />) : null}
+                      <input
+                        type="file"
+                        name="ImgPreview"
+                        onChange={this.onFilesPreview}
+                        className="form-control-file"
+                      />
+                      {this.state.imgPreview ? (
+                        <img
+                          src={this.state.imgPreview}
+                          alt="test"
+                          height="150"
+                        />
+                      ) : null}
                     </div>
                   </div>
-                  <input type="submit" value="Enviar" className="btn btn-primary btn-block" />
+                  <input
+                    type="submit"
+                    value="Enviar"
+                    className="btn btn-primary btn-block"
+                  />
                 </form>
               </div>
             </div>
           </div>
         </div>
       </div>
-    )
+    );
   }
 }
 

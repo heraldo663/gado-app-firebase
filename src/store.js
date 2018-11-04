@@ -4,7 +4,7 @@ import "firebase/firestore";
 import { reactReduxFirebase, firebaseReducer } from "react-redux-firebase";
 import { reduxFirestore, firestoreReducer } from "redux-firestore";
 
-import firebaseConfig from "../firebaseConfig";
+import firebaseConfig from "./firebaseConfig";
 
 import notifyReducer from "./reducers/notifyReducer";
 
@@ -42,7 +42,7 @@ const store = createStoreWithFirebase(
   initialState,
   compose(
     reactReduxFirebase(firebase)
-    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+    // window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
   )
 );
 
